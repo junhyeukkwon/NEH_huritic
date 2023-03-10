@@ -32,7 +32,7 @@ for i in range(1, jobn+1):
     job = Job(i,list(map(int,lines[i-1].split())))
     jobs.append(job)
 
-sort_jobs = Job.Sorting(jobs)
+jobs = Job.Sorting(jobs)
 
 
 # 알고리즘 시작
@@ -43,12 +43,11 @@ sort_jobs = Job.Sorting(jobs)
 계속 남은 job을 추가
 '''
 
-def calc_makespan(jobs, order):
+def calc_makespan(jobs):
     '''
     Flow shop에서 모든 job이 진행되었을 때의 시간 즉, makespan을 구하는 함수
     Args: 
-        jobs: job들이 machine에서 진행하는 processing time
-        order: 주어진 작업의 순서 ex) [2,3,1]
+        jobs: 각 job의 객체가 담겨져 있는 리스트 형태
     '''
     #n은 job의 수 , m의 기계의 수
     n, m = len(jobs), len(jobs[0].processing_time)
@@ -57,45 +56,42 @@ def calc_makespan(jobs, order):
     # 작업순서 대로 for문 시작
     for i in range(n):
         #현재 순회하는 작업의 번호를 찾습니다.
-        job_match = order[i]
-        for job in jobs:
-            if job.job_name == job_match:
-                job.processing_time
+        job = jobs[i]
         #기계순서대로 순회
         for j in range(m):
             #현재 시점에서 이전 머신에서 job이 끝나는 시간과 
             prev_time = times[i-1][j] if i > 0 else 0
             next_time = times[i][j-1] if j > 0 else 0
-            times[i][j] = max(prev_time, next_time) + jobs[job-1].processing_time[j]
+            times[i][j] = max(prev_time, next_time) + job.processing_time[j]
     return times[-1][-1]
 
 def NEH_algorithm(jobs):
     n, m = len(jobs), len(jobs[0].processing_time)
-    order = list(range(1,n+1))
-    order.sort(key=lambda x: jobs[x-1].total_processing_time, reverse=True)
-    partial_seq = [order[0]-1, order[1]-1]
-    for i in range(2, n):
-        job = order[i] - 1
-        best_pos, best_makespan = -1, float('inf')
-        for j in range(i+1):
-            #step1. order에서 
-            for k in range(2):
-                temp_seq = partial_seq[:j] + [job] + partial_seq[j:]
-                if k == 1 and j < i:
-                    temp_seq[j], temp_seq[j+1] = temp_seq[j+1], temp_seq[j]
-                elif k == 1 and j == i:
-                    temp_seq.append(temp_seq[-1])
-                    temp_seq[-2], temp_seq[-1] = temp_seq[-1], temp_seq[-2]
-                makespan = calc_makespan(jobs, temp_seq)
-                if makespan < best_makespan:
-                    best_makespan = makespan
-                    best_pos = j
-            if j < i and best_makespan < calc_makespan(jobs, partial_seq[:j] + [job] + partial_seq[j:]):
-                break
-        partial_seq.insert(best_pos, job)
-    return [x+1 for x in partial_seq], best_makespan
+    partial_seq = [jobs[0]]
+    best_makespan = float('inf')
+    for i in range(1, len(jobs)):
+        #1,3 , 3,1을 하는 코드 구현
+        partial_seq.insert(i, jobs[i])
+        for j in range(len(partial_seq)):
+            tmp_seq = partial_seq.copy()
+            tmp_Cmax = calc_makespan(tmp_seq)
+            tmp_seq_swp = tmp_seq.copy()
+            tmp_seq_swp[i], tmp_seq_swp[j] = tmp_seq_swp[j], tmp_seq_swp[i]
+            tmp_Cmax_swp = calc_makespan(tmp_seq_swp)
+            if tmp_Cmax < tmp_Cmax_swp:
+                partial_seq = tmp_seq
+                best_makespan = tmp_Cmax
+            else:
+                partial_seq = tmp_seq_swp
+                best_makespan = tmp_Cmax_swp
+        best_seq = partial_seq
+
+    return best_seq , best_makespan
 
 
-p, best_makespan = NEH_algorithm(jobs)
+p, bms = NEH_algorithm(jobs)
 print(p)
-print(best_makespan)
+
+for i in p:
+    print(i.job_name)
+print(bms)
