@@ -1,3 +1,5 @@
+import copy as cp #리스트의 복제를 위해서 쓰는 모듈
+
 
 #파일 불러들기
 f = open('data.txt', 'r')
@@ -59,7 +61,8 @@ def calc_makespan(jobs):
         job = jobs[i]
         #기계순서대로 순회
         for j in range(m):
-            #현재 시점에서 이전 머신에서 job이 끝나는 시간과 
+            #현재 시점에서 이전 머신에서 job이 끝나는 시간과 지금 머신에서 진행된 job의 끝나는 시간을 비교
+            #그 시간에서의 시작을 해야하므로 max값 + pt 
             prev_time = times[i-1][j] if i > 0 else 0
             next_time = times[i][j-1] if j > 0 else 0
             times[i][j] = max(prev_time, next_time) + job.processing_time[j]
@@ -73,9 +76,9 @@ def NEH_algorithm(jobs):
         #1,3 , 3,1을 하는 코드 구현
         partial_seq.insert(i, jobs[i])
         for j in range(len(partial_seq)):
-            tmp_seq = partial_seq.copy()
+            tmp_seq = cp.copy(partial_seq)
             tmp_Cmax = calc_makespan(tmp_seq)
-            tmp_seq_swp = tmp_seq.copy()
+            tmp_seq_swp = cp.copy(tmp_seq)
             tmp_seq_swp[i], tmp_seq_swp[j] = tmp_seq_swp[j], tmp_seq_swp[i]
             tmp_Cmax_swp = calc_makespan(tmp_seq_swp)
             if tmp_Cmax < tmp_Cmax_swp:
