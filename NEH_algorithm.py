@@ -44,12 +44,26 @@ sort_jobs = Job.Sorting(jobs)
 '''
 
 def calc_makespan(jobs, order):
+    '''
+    Flow shop에서 모든 job이 진행되었을 때의 시간 즉, makespan을 구하는 함수
+    Args: 
+        jobs: job들이 machine에서 진행하는 processing time
+        order: 주어진 작업의 순서 ex) [2,3,1]
+    '''
+    #n은 job의 수 , m의 기계의 수
     n, m = len(jobs), len(jobs[0].processing_time)
-    #n행 m열을 만든다.
+    #n행 m열을 만든다.2차원 배열을 생성
     times = [[0] * m for _ in range(n)]
+    # 작업순서 대로 for문 시작
     for i in range(n):
-        job = order[i] - 1
+        #현재 순회하는 작업의 번호를 찾습니다.
+        job_match = order[i]
+        for job in jobs:
+            if job.job_name == job_match:
+                job.processing_time
+        #기계순서대로 순회
         for j in range(m):
+            #현재 시점에서 이전 머신에서 job이 끝나는 시간과 
             prev_time = times[i-1][j] if i > 0 else 0
             next_time = times[i][j-1] if j > 0 else 0
             times[i][j] = max(prev_time, next_time) + jobs[job-1].processing_time[j]
